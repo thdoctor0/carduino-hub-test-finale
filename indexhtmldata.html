@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carduino HUB</title>
+  <style>
+    body {  font-family: Arial, sans-serif;  text-align: center;  background-color: #f8f9fa;  margin: 0;  padding: 20px;}
+    h1 {  color: #007bff;}
+    .button-grid {  display: grid;  grid-template-columns: repeat(3, 1fr);  gap: 10px;  max-width: 300px;  margin: 20px auto;}
+    .button {  padding: 20px;  font-size: 18px;  font-weight: bold;  background-color: #007bff;  color: white;  border: none;  border-radius: 10px;  cursor: pointer;  transition: 0.3s;}
+    .button:hover {  background-color: #0056b3;}
+    .voice-btn {  background-color: #28a745;  width: 100%;  margin-top: 15px;}
+    .voice-btn:hover {   background-color: #218838; }
+    #result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #333; }
+    iframe { display: none;}
+    </style>
+    </head>
+    <body>
+    <h1>Carduino HUB</h1>
+    <p>Controlează mașina cu butoane sau voce.</p>
+    <div class="button-grid">
+    <button class="button" onclick="sendCommand('AUTO=ON')">Auto ON</button>
+    <button class="button" onclick="sendCommand('FORWARD')">Înainte</button>
+    <button class="button" onclick="sendCommand('AUTO=OFF')">Auto OFF</button>
+    <button class="button" onclick="sendCommand('LEFT')">Stânga</button>
+    <button class="button" onclick="sendCommand('STOP')">STOP</button>
+    <button class="button" onclick="sendCommand('RIGHT')">Dreapta</button>
+    <button class="button" onclick="sendCommand('ROTATEDOWN')">Roteste cupa in jos</button>
+    <button class="button" onclick="sendCommand('BACKWARD')">Înapoi</button>
+    <button class="button" onclick="sendCommand('ROTATEUP')">Roteste cupa in sus</button>
+    </div>
+    <button class="button voice-btn" id="start-button">🎤 Control Vocal</button>
+    <div id="result"></div>
+    <iframe id="hidden-iframe"></iframe>
+    <script>
+    const BASE_URL = "http://172.20.100.173";
+    function sendCommand(endpoint) {
+    document.getElementById('hidden-iframe').src = `${BASE_URL}/${endpoint}`;
+    document.getElementById('result').innerText = `Comanda "${endpoint}" trimisă!`;}
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (window.SpeechRecognition) {
+    const recognition = new window.SpeechRecognition();
+    recognition.lang = 'ro-RO';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.addEventListener('result', (event) => {
+    const transcript = event.results[0][0].transcript.trim().toLowerCase();
+    document.getElementById('result').innerText = "Am auzit: " + transcript;
+    const commands = {
+          'auto on': 'AUTO=ON',
+          'auto off': 'AUTO=OFF',
+          'înainte': 'FORWARD',
+          'înapoi': 'BACKWARD',
+          'stânga': 'LEFT',
+          'dreapta': 'RIGHT',
+          'stop': 'STOP',
+          'roteste cupa in jos': 'ROTATEDOWN',
+          'roteste cupa in sus': 'ROTATEUP' };
+      if (commands[transcript]) {  sendCommand(commands[transcript]);} else {  document.getElementById('result').innerText = "Comandă necunoscută!";}});
+      recognition.addEventListener('error', (event) => {
+      document.getElementById('result').innerText = 'Eroare recunoaștere vocală: ' + event.error; });
+      document.getElementById('start-button').addEventListener('click', () => {  recognition.start();}); } else { document.getElementById('result').innerText = "Browserul tău nu suportă recunoașterea vocală!";}
+  </script>
+</body>
+</html>
